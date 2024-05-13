@@ -1,0 +1,66 @@
+import numpy as nu
+import matplotlib.pyplot as matp 
+
+# definicion de los límites de la cinta transportadora (elegi estos valores porque el eje x lo quise hacer de 10 cm y el eje Y de 3 cm)
+xMin, xMax = -10, 10
+yMin, yMax = -3, 3
+
+# definicion de la función que verifica si una posición está dentro de los límites de la cinta transportadora
+def colocaciónValida(x, y):
+    return xMin <= x <= xMax and yMin <= y <= yMax
+
+# definicion de la función para simular el montaje de los bloques del motor
+def simularArmado(colocaciónCorrecta):
+    desplazamientoX = nu.random.uniform(-0.5, 0.5)
+    desplazamientoY = nu.random.uniform(-0.5, 0.5)
+    colocaciónX = colocaciónCorrecta[0] + desplazamientoX
+    colocaciónY = colocaciónCorrecta[1] + desplazamientoY
+    return colocaciónX, colocaciónY
+
+# definicion de la función de la búsqueda exhaustiva
+def busquedaExhaustiva(colocaciónCorrecta):
+    mejorColocación = None
+    menorDistancia = float('inf')
+    movimientos = 0
+
+    for x in range(xMin, xMax + 1):
+        for y in range(yMin, yMax + 1):
+            if colocaciónValida(x, y):
+                movimientos += 1
+                colocaciónActual = (x,y)
+                colocaciónSimulada = simularArmado(colocaciónActual)
+                distancia = nu.linalg.norm(nu.array(colocaciónSimulada) - nu.array(colocaciónCorrecta))
+                if distancia < menorDistancia:
+                    menorDistancia = distancia 
+                    mejorColocación = colocaciónActual
+    return mejorColocación, movimientos
+
+
+colocaciónCorrecta = (0,1)
+
+# busqueda exhaustiva
+colocaciónEncontrada, movimientos = busquedaExhaustiva(colocaciónCorrecta)
+
+# definicion para la visualización de la búsqueda
+def visualizarBusqueda(colocaciónCorrecta, mejorColocación):
+    matp.figure(figsize=(10, 3))
+    matp.plot(*colocaciónCorrecta, 'orange', marker='o', label='Colocación correcta')  
+    if mejorColocación:
+        matp.plot(*mejorColocación, 'violet', marker='o', label='Mejor colocación encontrada') 
+    matp.xlim(xMin - 1, xMax + 1)
+    matp.ylim(yMin - 1, yMax + 1)
+    matp.xlabel('eje x')
+    matp.ylabel('eje y')
+    matp.title('Búsqueda Exhaustiva de la colocación del Motor')
+    matp.grid(True)
+    matp.legend()
+    matp.gca().set_aspect('equal', adjustable='box')
+    matp.show()
+
+# se imprime y se visualiza la búsqueda, si existe
+if colocaciónEncontrada:
+    print("La colocacion encontrada del bloque de motor es:", colocaciónEncontrada)
+    print("Cantidad de movimientos realizados:", movimientos)
+    visualizarBusqueda(colocaciónCorrecta, colocaciónEncontrada)
+else:
+    print("No se encontró la colocación correcta del bloque de motor")
