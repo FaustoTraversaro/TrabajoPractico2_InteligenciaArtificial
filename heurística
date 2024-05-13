@@ -1,0 +1,66 @@
+import numpy as np 
+import matplotlib.pyplot as plt
+
+# definicion de los límites de la cinta transportadora
+xMin, xMax = -10, 10
+yMin, yMax = -10, 10
+
+# definicion de la función que verifica si una posición está dentro de los límites
+def colocacionValida(colocacion):
+    x, y = colocacion
+    return xMin <= x <= xMax and yMin <= y <= yMax
+
+# definicion de la función para simular el montaje de los bloques del motor
+def simularArmado(colocacionActual, colocacionCorrecta):
+    desplazamientoX = np.random.uniform(-0.5, 0.5)
+    desplazamientoY = np.random.uniform(-0.5, 0.5)
+    colocacionX = colocacionActual[0] + desplazamientoX
+    colocacionY = colocacionActual[1] + desplazamientoY
+    distancia = np.linalg.norm(np.array((colocacionX, colocacionY)) - np.array(colocacionCorrecta))
+    return colocacionX, colocacionY, distancia
+
+# definicion de la función de búsqueda heurística
+def busquedaHeuristica(colocacionInicial, colocacionCorrecta):
+    mejorColocación = colocacionInicial
+    menorDistancia = np.inf 
+    movimientosRealizados = 0  
+
+    for _ in range(1000): 
+        # simulacion de el montaje de la posición actual 
+        colocacionActual = (mejorColocación[0] + np.random.uniform(-0.5, 0.5), mejorColocación[1] + np.random.uniform(-0.5, 0.5))
+        _, _, distancia = simularArmado(colocacionActual, colocacionCorrecta)
+        # actualizacion de la mejor posición si se encuentra una más cercana a la posición correcta
+        if distancia < menorDistancia and colocacionValida(colocacionActual):
+            mejorColocación = colocacionActual
+            menorDistancia = distancia 
+        movimientosRealizados += 1  
+    return mejorColocación, movimientosRealizados  
+
+
+# definicion de la posición correcta del bloque de motor
+colocacionCorrecta = (0,1)
+
+# definicion de la posición inicial de la búsqueda heurística 
+colocacionInicial = (8, -9)
+
+# realizacion de la búsqueda heurística 
+colocacionEncontrada, movimientosRealizados = busquedaHeuristica(colocacionInicial, colocacionCorrecta)
+
+# demostracion de la cantidad de movimientos realizados
+print("Cantidad de movimientos realizados:", movimientosRealizados)
+
+# visualizacion de el resultado
+plt.figure(figsize=(8, 8))
+plt.plot(*colocacionCorrecta, 'orange', marker='o', label='Colocación correcta')
+plt.plot(*colocacionInicial, 'blue', marker='o', label='Colocación inicial')
+if colocacionEncontrada:
+    plt.plot(*colocacionEncontrada, 'violet', marker='o', label='Mejor colocación encontrada')
+    plt.xlim(xMin - 1, xMax + 1)
+    plt.ylim(yMin - 1, yMax + 1)
+    plt.xlabel('Posición x')
+    plt.xlabel('Posición y')
+    plt.title('Búsqueda Heurística de la colocación correcta del motor')
+    plt.grid(True)
+    plt.legend()
+    plt.gca().set_aspect('equal', adjustable='box')
+    plt.show()
